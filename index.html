@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskFlow Pro - Interactive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            max-width: 375px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 0 0 24px 24px;
+        }
+        
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        
+        .stat-card {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            padding: 12px 8px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .stat-label {
+            font-size: 10px;
+            opacity: 0.9;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: white;
+            margin: 16px;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: none;
+            background: none;
+            font-size: 14px;
+        }
+        
+        .nav-tab.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.4);
+        }
+        
+        .content {
+            padding: 0 16px 80px;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .view {
+            display: none;
+        }
+        
+        .view.active {
+            display: block;
+        }
+        
+        /* Workflow Styles */
+        .workflow-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 0 4px;
+        }
+        
+        .section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .bucket {
+            background: white;
+            border: 2px dashed #e5e7eb;
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+            min-height: 80px;
+        }
+        
+        .bucket-todo {
+            background: #dbeafe;
+            border-color: #93c5fd;
+        }
+        
+        .bucket-help {
+            background: #fed7aa;
+            border-color: #fdba74;
+        }
+        
+        .bucket-done {
+            background: #bbf7d0;
+            border-color: #86efac;
+        }
+        
+        .bucket-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .bucket-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .bucket-name {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        .bucket-desc {
+            font-size: 10px;
+            opacity: 0.75;
+        }
+        
+        .bucket-count {
+            background: rgba(255,255,255,0.8);
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        
+        .task-item {
+            background: rgba(255,255,255,0.6);
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            cursor: move;
+            transition: all 0.2s;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #9ca3af;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+        }
+        
+        .task-checkbox.checked {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+        
+        .task-priority {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .priority-high { background: #ef4444; }
+        .priority-medium { background: #eab308; }
+        .priority-low { background: #22c55e; }
+        
+        .task-title {
+            flex: 1;
+            color: #374151;
+        }
+        
+        .task-title.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
+        /* List View Styles */
+        .task-list-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .category-badge {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        /* Stats Page */
+        .stats-container {
+            padding-bottom: 20px;
+        }
+        
+        .stats-hero {
+            background: linear-gradient(135deg, #8b5cf6, #ec4899);
+            color: white;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .stats-cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .stat-detail-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .stat-detail-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #3b82f6;
+            margin-bottom: 4px;
+        }
+        
+        .stat-detail-label {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+        
+        .achievement-card {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            color: white;
+        }
+        
+        .achievement-icon {
+            font-size: 32px;
+        }
+        
+        .achievement-title {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        
+        .achievement-desc {
+            font-size: 12px;
+            opacity: 0.9;
+        }
+        
+        .progress-section {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+        }
+        
+        .goal-card {
+            margin-bottom: 16px;
+        }
+        
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #10b981, #34d399);
+            border-radius: 4px;
+            transition: width 0.5s;
+        }
+        
+        /* Settings Page */
+        .settings-container {
+            padding-bottom: 20px;
+        }
+        
+        .settings-section {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .settings-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #374151;
+        }
+        
+        .setting-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .setting-item:last-child {
+            border-bottom: none;
+        }
+        
+        .setting-button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: 20px;
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+            cursor: pointer;
+            color: white;
+            font-size: 24px;
+            border: none;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-around;
+            padding: 8px 0;
+            max-width: 375px;
+            margin: 0 auto;
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #9ca3af;
+            border: none;
+            background: none;
+        }
+        
+        .nav-item.active {
+            color: #3b82f6;
+        }
+        
+        .nav-label {
+            font-size: 11px;
+            margin-top: 4px;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: flex-end;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 375px;
+            margin: 0 auto;
+        }
+        
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-top: 4px;
+            margin-bottom: 16px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <div class="header-top">
+            <h1>TaskFlow Pro</h1>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="activeTasks">4</div>
+                <div class="stat-label">Active</div>
+            </div>
+            <div class="stat-card" style="background: rgba(34,197,94,0.3);">
+                <div class="stat-number" id="completedToday">0</div>
+                <div class="stat-label">Today</div>
+            </div>
+            <div class="stat-card" style="background: rgba(234,179,8,0.3);">
+                <div class="stat-number">2</div>
+                <div class="stat-label">Due Today</div>
+            </div>
+            <div class="stat-card" style="background: rgba(239,68,68,0.3);">
+                <div class="stat-number">1</div>
+                <div class="stat-label">Overdue</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Container -->
+    <div id="mainContent">
+        <!-- Home Page -->
+        <div id="homePage" class="page active">
+            <div class="nav-tabs">
+                <button class="nav-tab active" id="workflowTab">Workflow</button>
+                <button class="nav-tab" id="listTab">List View</button>
+            </div>
+            
+            <div class="content">
+                <div id="workflowView" class="view active">
+                    <!-- Workflow content will be inserted here -->
+                </div>
+                <div id="listView" class="view">
+                    <!-- List content will be inserted here -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Stats Page -->
+        <div id="statsPage" class="page">
+            <div class="content stats-container">
+                <div class="stats-hero">
+                    <h2 style="font-size: 24px; margin-bottom: 8px;">🏆 Your Progress</h2>
+                    <p style="font-size: 14px;">Keep up the amazing work!</p>
+                </div>
+                
+                <div class="stats-cards">
+                    <div class="stat-detail-card">
+                        <div class="stat-icon">🔥</div>
+                        <div class="stat-detail-number" id="weekTasks">0</div>
+                        <div class="stat-detail-label">This Week</div>
+                    </div>
+                    <div class="stat-detail-card">
+                        <div class="stat-icon">💪</div>
+                        <div class="stat-detail-number" id="totalCompleted">2</div>
+                        <div class="stat-detail-label">Total Completed</div>
+                    </div>
+                </div>
+                
+                <div class="achievement-card" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+                    <div class="achievement-icon">⭐</div>
+                    <div>
+                        <div class="achievement-title">Getting Started!</div>
+                        <div class="achievement-desc">You've begun your productivity journey</div>
+                    </div>
+                </div>
+                
+                <div class="progress-section">
+                    <h3 style="margin-bottom: 12px;">Daily Goal Progress</h3>
+                    <div class="goal-card">
+                        <div class="goal-header">
+                            <span>Progress</span>
+                            <span id="goalProgress">0/5</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressBar" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div id="settingsPage" class="page">
+            <div class="content settings-container">
+                <h2 style="font-size: 24px; margin-bottom: 20px;">⚙️ Settings</h2>
+                
+                <div class="settings-section">
+                    <h3 class="settings-title">Preferences</h3>
+                    <div class="setting-item">
+                        <label>Daily Goal</label>
+                        <input type="number" value="5" style="width: 60px; padding: 4px; border: 1px solid #e5e7eb; border-radius: 4px;">
+                    </div>
+                    <div class="setting-item">
+                        <label>Notifications</label>
+                        <input type="checkbox" checked>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3 class="settings-title">About</h3>
+                    <p style="font-size: 14px; color: #6b7280;">TaskFlow Pro v1.0</p>
+                    <p style="font-size: 12px; color: #9ca3af; margin-top: 8px;">Your productivity companion</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- FAB -->
+    <button class="fab" id="addTaskBtn">+</button>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" id="homeNav">
+            <span>🏠</span>
+            <span class="nav-label">Home</span>
+        </button>
+        <button class="nav-item" id="statsNav">
+            <span>🏆</span>
+            <span class="nav-label">Stats</span>
+        </button>
+        <button class="nav-item" id="settingsNav">
+            <span>⚙️</span>
+            <span class="nav-label">Settings</span>
+        </button>
+    </div>
+    
+    <!-- Add Task Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 16px;">Add New Task</h3>
+            <input type="text" id="taskInput" class="form-input" placeholder="Task title">
+            <select id="categorySelect" class="form-select">
+                <option value="All Tasks">All Tasks</option>
+                <option value="TO DO">TO DO</option>
+                <option value="NEED HELP">NEED HELP</option>
+            </select>
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">Add Task</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // App State
+        let tasks = [
+            { id: 1, title: "Replace motor in lawn mower", category: "All Tasks", priority: "high", completed: false },
+            { id: 2, title: "Call credit card creditors", category: "TO DO", priority: "high", completed: false },
+            { id: 3, title: "Get quotes for kennel", category: "NEED HELP", priority: "medium", completed: false },
+            { id: 4, title: "Process payroll", category: "DONE", priority: "high", completed: true },
+            { id: 5, title: "Pay Lauren Crosser", category: "DONE", priority: "medium", completed: true }
+        ];
+        
+        let currentView = 'workflow';
+        let draggedTaskId = null;
+        
+        // Initialize App
+        function init() {
+            setupEventListeners();
+            renderWorkflow();
+            updateStats();
+        }
+        
+        // Event Listeners
+        function setupEventListeners() {
+            // Navigation
+            document.getElementById('homeNav').addEventListener('click', () => showPage('home'));
+            document.getElementById('statsNav').addEventListener('click', () => showPage('stats'));
+            document.getElementById('settingsNav').addEventListener('click', () => showPage('settings'));
+            
+            // View Tabs
+            document.getElementById('workflowTab').addEventListener('click', () => switchView('workflow'));
+            document.getElementById('listTab').addEventListener('click', () => switchView('list'));
+            
+            // Add Task
+            document.getElementById('addTaskBtn').addEventListener('click', () => {
+                document.getElementById('addModal').classList.add('active');
+            });
+            
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                document.getElementById('addModal').classList.remove('active');
+            });
+            
+            document.getElementById('saveBtn').addEventListener('click', addTask);
+        }
+        
+        // Page Navigation
+        function showPage(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+            });
+            
+            // Remove active from nav items
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            // Show selected page
+            if (page === 'home') {
+                document.getElementById('homePage').classList.add('active');
+                document.getElementById('homeNav').classList.add('active');
+            } else if (page === 'stats') {
+                document.getElementById('statsPage').classList.add('active');
+                document.getElementById('statsNav').classList.add('active');
+                updateStatsPage();
+            } else if (page === 'settings') {
+                document.getElementById('settingsPage').classList.add('active');
+                document.getElementById('settingsNav').classList.add('active');
+            }
+        }
+        
+        // View Switching
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            
+            if (view === 'workflow') {
+                document.getElementById('workflowTab').classList.add('active');
+                document.getElementById('workflowView').classList.add('active');
+                renderWorkflow();
+            } else {
+                document.getElementById('listTab').classList.add('active');
+                document.getElementById('listView').classList.add('active');
+                renderList();
+            }
+        }
+        
+        // Render Workflow
+        function renderWorkflow() {
+            const workflowView = document.getElementById('workflowView');
+            
+            const categories = [
+                { key: 'TO DO', name: 'TO DO', desc: 'Ready to work on', class: 'bucket-todo', icon: '📋' },
+                { key: 'NEED HELP', name: 'NEED HELP', desc: 'Waiting for others', class: 'bucket-help', icon: '🤝' },
+                { key: 'DONE', name: 'DONE', desc: 'Completed', class: 'bucket-done', icon: '✅' },
+                { key: 'All Tasks', name: 'All Tasks', desc: 'Central hub', class: '', icon: '📝' }
+            ];
+            
+            let html = '';
+            categories.forEach(cat => {
+                const catTasks = tasks.filter(t => t.category === cat.key);
+                
+                html += `
+                    <div class="bucket ${cat.class}" 
+                         ondrop="handleDrop(event, '${cat.key}')"
+                         ondragover="handleDragOver(event)">
+                        <div class="bucket-header">
+                            <div class="bucket-info">
+                                <span>${cat.icon}</span>
+                                <div>
+                                    <div class="bucket-name">${cat.name}</div>
+                                    <div class="bucket-desc">${cat.desc}</div>
+                                </div>
+                            </div>
+                            <span class="bucket-count">${catTasks.length}</span>
+                        </div>
+                        <div class="tasks-container">
+                `;
+                
+                catTasks.forEach(task => {
+                    html += `
+                        <div class="task-item" draggable="true" ondragstart="handleDragStart(event, ${task.id})">
+                            <div class="task-checkbox ${task.completed ? 'checked' : ''}" 
+                                 onclick="toggleTask(${task.id})">
+                                ${task.completed ? '✓' : ''}
+                            </div>
+                            <div class="task-priority priority-${task.priority}"></div>
+                            <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div></div>';
+            });
+            
+            workflowView.innerHTML = html;
+        }
+        
+        // Render List
+        function renderList() {
+            const listView = document.getElementById('listView');
+            
+            let html = '';
+            tasks.forEach(task => {
+                const catColors = {
+                    'TO DO': '#dbeafe',
+                    'NEED HELP': '#fed7aa',
+                    'DONE': '#bbf7d0',
+                    'All Tasks': '#f3f4f6'
+                };
+                
+                html += `
+                    <div class="task-list-item">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" 
+                             onclick="toggleTask(${task.id})">
+                            ${task.completed ? '✓' : ''}
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title ${task.completed ? 'completed' : ''}">${task.title}</div>
+                            <div class="task-meta">
+                                <span class="task-priority priority-${task.priority}"></span>
+                                <span class="category-badge" style="background: ${catColors[task.category]};">
+                                    ${task.category}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            listView.innerHTML = html;
+        }
+        
+        // Task Management
+        function toggleTask(id) {
+            const task = tasks.find(t => t.id === id);
+            if (task) {
+                task.completed = !task.completed;
+                task.category = task.completed ? 'DONE' : 'All Tasks';
+                
+                if (currentView === 'workflow') renderWorkflow();
+                else renderList();
+                
+                updateStats();
+            }
+        }
+        
+        function addTask() {
+            const title = document.getElementById('taskInput').value.trim();
+            const category = document.getElementById('categorySelect').value;
+            
+            if (title) {
+                tasks.push({
+                    id: Date.now(),
+                    title: title,
+                    category: category,
+                    priority: 'medium',
+                    completed: false
+                });
+                
+                document.getElementById('taskInput').value = '';
+                document.getElementById('addModal').classList.remove('active');
+                
+                if (currentView === 'workflow') renderWorkflow();
+                else renderList();
+                
+                updateStats();
+            }
+        }
+        
+        // Drag and Drop for Tasks
+        function handleDragStart(e, taskId) {
+            draggedTaskId = taskId;
+            draggedBucketIndex = null; // Clear bucket dragging
+            e.dataTransfer.effectAllowed = 'move';
+            e.stopPropagation(); // Prevent bucket drag when dragging task
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        }
+        
+        function handleDrop(e, category) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // Only handle task drops, not bucket drops
+            if (draggedTaskId !== null) {
+                const task = tasks.find(t => t.id === draggedTaskId);
+                if (task) {
+                    task.category = category;
+                    if (category === 'DONE') task.completed = true;
+                    else if (category !== 'DONE') task.completed = false;
+                    
+                    renderWorkflow();
+                    updateStats();
+                }
+            }
+        }
+        
+        // Drag and Drop for Buckets
+        function handleBucketDragStart(e, bucketIndex) {
+            draggedBucketIndex = bucketIndex;
+            draggedTaskId = null; // Clear task dragging
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.parentElement.classList.add('dragging-bucket');
+            e.stopPropagation();
+        }
+        
+        function handleBucketDragEnd(e) {
+            e.target.parentElement.classList.remove('dragging-bucket');
+            document.querySelectorAll('.bucket').forEach(bucket => {
+                bucket.classList.remove('drag-over-bucket');
+            });
+        }
+        
+        function handleBucketDragEnter(e, targetIndex) {
+            if (draggedBucketIndex !== null && draggedBucketIndex !== targetIndex) {
+                e.currentTarget.classList.add('drag-over-bucket');
+            }
+        }
+        
+        function handleBucketDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over-bucket');
+        }
+        
+        // Override the default drop to handle bucket reordering
+        window.addEventListener('drop', function(e) {
+            if (draggedBucketIndex !== null) {
+                e.preventDefault();
+                const targetBucket = e.target.closest('.bucket');
+                
+                if (targetBucket) {
+                    const targetIndex = parseInt(targetBucket.dataset.bucketIndex);
+                    
+                    if (targetIndex !== undefined && draggedBucketIndex !== targetIndex) {
+                        // Reorder categories array
+                        const movedCategory = categories[draggedBucketIndex];
+                        categories.splice(draggedBucketIndex, 1);
+                        categories.splice(targetIndex, 0, movedCategory);
+                        
+                        // Reset drag state
+                        draggedBucketIndex = null;
+                        
+                        // Re-render workflow with new order
+                        renderWorkflow();
+                    }
+                }
+            }
+        });
+        
+        // Stats
+        function updateStats() {
+            const active = tasks.filter(t => !t.completed).length;
+            const completed = tasks.filter(t => t.completed).length;
+            
+            document.getElementById('activeTasks').textContent = active;
+            document.getElementById('completedToday').textContent = completed;
+        }
+        
+        function updateStatsPage() {
+            const completed = tasks.filter(t => t.completed).length;
+            const total = tasks.length;
+            const progress = Math.round((completed / 5) * 100);
+            
+            document.getElementById('weekTasks').textContent = completed;
+            document.getElementById('totalCompleted').textContent = completed;
+            document.getElementById('goalProgress').textContent = `${completed}/5`;
+            document.getElementById('progressBar').style.width = `${Math.min(progress, 100)}%`;
+        }
+        
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
